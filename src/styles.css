@@ -1,0 +1,154 @@
+/*
+ * @vinsa/towers
+ * Theme by setting any of the --rt-* variables on :root or on an element around the chart.
+ */
+
+:where(:root) {
+  --rt-font: inherit;
+  --rt-ink: #162033;
+  --rt-ink-soft: #56627a;
+  --rt-surface: #ffffff;
+  --rt-rule: #e8ebf0;
+  --rt-retention: #d5d9df;
+  --rt-loss: #b3261e;
+}
+
+.rt-towers,
+.rt-towers *,
+.rt-chart,
+.rt-chart * {
+  box-sizing: border-box;
+}
+
+/* ─── Towers: every risk in a response ─────────────────────────────────────── */
+
+.rt-towers { display: flex; flex-direction: column; gap: 24px; color: var(--rt-ink); font-family: var(--rt-font); }
+.rt-risk-title { margin: 0 0 8px; font-size: 15px; font-weight: 600; }
+.rt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px 24px; }
+.rt-tower { margin: 0; min-width: 0; }
+.rt-tower > figcaption { margin-bottom: 8px; padding-left: 48px; font-weight: 500; }
+.rt-empty { margin: 0; color: var(--rt-ink-soft); }
+.rt-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 20px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rt-rule);
+  font-size: 12px;
+  color: var(--rt-ink-soft);
+}
+.rt-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.rt-legend-note { margin-left: auto; }
+
+/* ─── One tower ────────────────────────────────────────────────────────────── */
+
+.rt-chart { display: flex; color: var(--rt-ink); font-family: var(--rt-font); }
+
+.rt-axis { position: relative; flex-shrink: 0; width: 48px; text-align: right; font-size: 11px; color: var(--rt-ink-soft); }
+.rt-tick { position: absolute; right: 6px; transform: translateY(50%); }
+.rt-tick-open { top: 0; transform: translateY(-50%); line-height: 1; }
+
+.rt-plot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  border-left: 1px solid var(--rt-ink);
+  border-bottom: 1px solid var(--rt-ink);
+  background: repeating-linear-gradient(0deg, transparent 0 39px, var(--rt-rule) 39px 40px);
+}
+
+.rt-shape {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 0.5px rgba(22, 32, 51, 0.55);
+  font-family: var(--rt-font);
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--rt-ink);
+  text-align: center;
+}
+button.rt-shape { cursor: pointer; }
+button.rt-shape:hover { filter: brightness(0.96); }
+.rt-shape > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rt-shape > span:first-child { font-weight: 600; }
+.rt-shape.is-retention { background: var(--rt-retention); color: #3f4859; }
+.rt-shape.is-selected { box-shadow: inset 0 0 0 2px var(--rt-ink); z-index: 2; }
+.rt-shape.is-dimmed { opacity: 0.45; }
+.rt-shape.is-open-top {
+  box-shadow: inset 0 0 0 0.5px rgba(22, 32, 51, 0.55), inset 0 3px 0 -1px var(--rt-surface);
+  border-top: 1.5px dashed var(--rt-ink);
+}
+
+/* Placement status of a reinsurer line: the less firm, the more broken the fill. */
+.rt-status-quoted {
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0 3px, transparent 3px 8px);
+}
+.rt-status-indication {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.9) 1.4px, transparent 1.6px);
+  background-size: 6px 6px;
+}
+.rt-status-firm-order {
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 7px);
+}
+
+/* A legend chip. Combine with an rt-status-* class, or is-retention. */
+.rt-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  background-color: #9fb8d6;
+  box-shadow: inset 0 0 0 0.5px rgba(22, 32, 51, 0.55);
+}
+.rt-swatch.is-retention { background-color: var(--rt-retention); }
+
+.rt-caption {
+  position: absolute;
+  transform: translateY(100%);
+  z-index: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 1px 5px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 0 0 0.5px rgba(22, 32, 51, 0.55);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  pointer-events: none;
+}
+
+.rt-loss {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(45deg, rgba(179, 38, 30, 0.16) 0 2px, transparent 2px 7px);
+  border-top: 2px solid var(--rt-loss);
+}
+.rt-loss-flag {
+  position: absolute;
+  right: 0;
+  transform: translateY(-100%);
+  background: var(--rt-loss);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rt-shape { transition: filter 120ms, opacity 120ms; }
+}
