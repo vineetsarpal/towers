@@ -1,6 +1,6 @@
 {
   "name": "@vinsa/towers",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "React components that draw reinsurance program towers from a computed towers response.",
   "license": "MIT",
   "repository": {
@@ -9,7 +9,9 @@
     "directory": "packages/towers"
   },
   "type": "module",
-  "sideEffects": ["**/*.css"],
+  "sideEffects": [
+    "**/*.css"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,8 +23,12 @@
     },
     "./styles.css": "./dist/styles.css"
   },
-  "files": ["dist"],
-  "publishConfig": { "access": "public" },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json && cp src/styles.css dist/styles.css",
     "test": "vitest run",
