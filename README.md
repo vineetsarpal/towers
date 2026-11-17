@@ -73,3 +73,7 @@ Layer colours come from the response: a block's `colorOverride` wins, otherwise 
 npm test
 npm run build
 ```
+
+## License
+
+[MIT](LICENSE)
