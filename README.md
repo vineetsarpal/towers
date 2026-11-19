@@ -47,7 +47,9 @@ One tower, with no surrounding layout, for when you build the page yourself. It 
 
 ### Helpers
 
-`applyLoss(tower, loss)` returns what a loss recovers from each layer and what stays with the cedant. `formatAmount`, `formatPercent`, `layerTerms`, `layerKey` and `assignFills` are exported for building schedules and side panels that match the chart.
+Use the Engine’s `POST /recoveries` for Recovery Estimates for illustration and what-if analysis, never for booking.
+
+`formatAmount`, `formatPercent`, `layerTerms`, `layerKey` and `assignFills` are exported for building schedules and side panels that match the chart.
 
 ## Theme
 

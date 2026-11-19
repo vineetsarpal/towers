@@ -146,43 +146,6 @@ export function layerCaptions(shapes: Shape[]): Caption[] {
 /** The highest finite amount drawn, or 0 when the tower has only unlimited layers. */
 export const towerTop = (tower: Tower) => Math.max(0, ...tower.bands.map((b) => b.hyTo ?? 0))
 
-// ─── Loss scenario ────────────────────────────────────────────────────────────
-
-export type LossResult = {
-  recoveries: { key: string; name: string; amount: number }[]
-  recovered: number
-  retained: number
-}
-
-const round = (n: number) => Math.round(n * 100) / 100
-
-/**
- * Runs one loss of the given size up the tower. Each block takes its width's
- * share of the part of the loss that falls in its band; the rest stays with
- * the cedant, as does anything above the tower.
- */
-export function applyLoss(tower: Tower, loss: number): LossResult {
-  const byLayer = new Map<string, { key: string; name: string; amount: number }>()
-
-  for (const band of [...tower.unlimitedBands, ...tower.bands]) {
-    const inBand = band.hyTo == null ? loss : Math.min(loss, band.hyTo) - band.hyFrom
-    if (inBand <= 0) continue
-    for (const block of band.verticalBlocks) {
-      if (block.isRetention || !block.isPrimary) continue
-      const key = layerKey(block)
-      const entry = byLayer.get(key) ?? { key, name: block.layerName ?? key, amount: 0 }
-      entry.amount += inBand * (block.xSpan[1] - block.xSpan[0])
-      byLayer.set(key, entry)
-    }
-  }
-
-  const recoveries = [...byLayer.values()]
-    .map((r) => ({ ...r, amount: round(r.amount) }))
-    .filter((r) => r.amount > 0)
-  const recovered = round(recoveries.reduce((sum, r) => sum + r.amount, 0))
-  return { recoveries, recovered, retained: round(loss - recovered) }
-}
-
 // ─── Colour ───────────────────────────────────────────────────────────────────
 
 /** Soft fills that keep dark text readable; neighbours in the list contrast. */

@@ -70,7 +70,13 @@ describe('Towers', () => {
   })
 
   it('flags a loss on the tower', () => {
-    render(<Towers data={data} riskId="r1" loss={300} />)
+    const { container } = render(<Towers data={data} riskId="r1" loss={300} />)
     expect(screen.getByText('Loss 300')).toBeTruthy()
+    expect(container.querySelector('.rt-loss')).toBeTruthy()
+  })
+
+  it('reports how far a loss extends above the tower', () => {
+    render(<Towers data={data} riskId="r1" loss={550} />)
+    expect(screen.getByText('Loss 550, 150 above the tower')).toBeTruthy()
   })
 })

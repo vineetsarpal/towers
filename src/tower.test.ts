@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Tower, VerticalBlock } from './types.js'
-import { applyLoss, blockLines, formatAmount, layerCaptions, towerShapes } from './tower.js'
+import { blockLines, formatAmount, layerCaptions, towerShapes } from './tower.js'
 
 const block = (over: Partial<VerticalBlock>): VerticalBlock => ({
   vBlockNo: 0, sharedRiskCount: 1, color: '#ccc', layerRef: null, layerName: 'L', layerType: 'XOL', contractRef: null, lowerLimit: 0,
@@ -78,46 +78,6 @@ describe('layerCaptions', () => {
 
   it('adds nothing for a layer drawn as a single block', () => {
     expect(layerCaptions(towerShapes(example3))).toEqual([])
-  })
-})
-
-describe('applyLoss', () => {
-  it('splits a loss between the layers it reaches and the cedant', () => {
-    const result = applyLoss(example3, 300)
-
-    expect(result.recoveries.map((r) => [r.name, r.amount])).toEqual([
-      ['Cont-QS1', 200],
-      ['Xol-Ly1', 30],
-      ['Xol-Ly2', 20],
-    ])
-    expect(result.recovered).toBe(250)
-    expect(result.retained).toBe(50)
-  })
-
-  it('keeps everything above the top of the tower with the cedant', () => {
-    const result = applyLoss(example3, 800)
-
-    expect(result.recovered).toBe(200 + 90 + 60 + 100)
-    expect(result.retained).toBe(350)
-  })
-
-  it('lets an unlimited quota share follow the loss all the way up', () => {
-    const tower: Tower = {
-      towerNo: 1, towerName: 'Tower', bands: [],
-      unlimitedBands: [{ bandRange: '', hBandNo: 1, hyFrom: 0, hyTo: null, isUnlimited: true, verticalBlocks: [qs, retention([0.8, 1])] }],
-    }
-
-    expect(applyLoss(tower, 1000)).toMatchObject({ recovered: 800, retained: 200 })
-  })
-
-  it('totals the lines of one layer under the layer', () => {
-    const lines = [
-      block({ layerName: 'Cat XL', layerRef: 'C1', reinsurer: 'Meridian Re', xSpan: [0, 0.25] }),
-      block({ layerName: 'Cat XL', layerRef: 'C1', reinsurer: 'Harbour Re', xSpan: [0.25, 1] }),
-    ]
-    const result = applyLoss({ towerNo: 1, towerName: 'T', unlimitedBands: [], bands: [band(0, 100, lines)] }, 40)
-
-    expect(result.recoveries).toEqual([{ key: 'C1', name: 'Cat XL', amount: 40 }])
   })
 })
 
