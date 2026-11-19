@@ -20,6 +20,7 @@ export type VerticalBlock = {
   accumulateBasis: string | null
   protection: string | null
   aad: number | null
+  blockKind?: 'line' | 'otherReinsurers' | 'cedant'
   reinsurer: string | null
   lineStatus: string | null
   isRetention: boolean

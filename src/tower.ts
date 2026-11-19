@@ -47,10 +47,26 @@ export function layerTerms(l: LayerTerms): string | null {
   return `${limit} xs ${formatAmount(l.lowerLimit)}${aad}${basis}`
 }
 
+export const OTHER_REINSURERS = 'Other reinsurers'
+
+export function reinsurerLabel(block: VerticalBlock): string | null {
+  return block.blockKind === 'otherReinsurers' ? OTHER_REINSURERS : block.reinsurer
+}
+
+export function isQuoteBlock(block: VerticalBlock): boolean {
+  return block.blockKind === 'line' &&
+    (block.lineStatus === 'indication' || block.lineStatus === 'quoted')
+}
+
 /** The lines written inside a block, most important first. */
 export function blockLines(b: VerticalBlock): string[] {
   if (b.isRetention) return [b.share < 99.995 ? `Retention ${formatPercent(b.share)}` : 'Retention']
-  if (b.reinsurer) return [b.reinsurer, formatPercent(b.share)]
+  const reinsurer = reinsurerLabel(b)
+  if (reinsurer) {
+    const lines = [reinsurer, formatPercent(b.share)]
+    if (isQuoteBlock(b) && b.lineStatus) lines.push(b.lineStatus)
+    return lines
+  }
 
   const lines = [b.layerRef ? `${b.layerName} (${b.layerRef})` : (b.layerName ?? 'Layer')]
   const terms = layerTerms(b)
@@ -91,8 +107,11 @@ const same = (a: number, b: number) => Math.abs(a - b) < 1e-9
  */
 export function towerShapes(tower: Tower): Shape[] {
   const shapes: Shape[] = []
-  const idOf = (b: VerticalBlock) =>
-    b.isRetention ? 'retention' : `${layerKey(b)}|${b.reinsurer ?? ''}`
+  const idOf = (b: VerticalBlock) => {
+    if (b.isRetention) return 'retention'
+    const key = `${layerKey(b)}|${b.reinsurer ?? ''}`
+    return b.blockKind ? `${key}|${b.blockKind}|${b.lineStatus ?? ''}` : key
+  }
 
   for (const band of [...tower.unlimitedBands, ...tower.bands]) {
     for (const block of band.verticalBlocks) {
@@ -129,7 +148,7 @@ export type Caption = { key: string; text: string; x0: number; x1: number; to: n
 export function layerCaptions(shapes: Shape[]): Caption[] {
   const captions = new Map<string, Caption>()
   for (const { block, x0, x1, to } of shapes) {
-    if (!block.reinsurer) continue
+    if (!reinsurerLabel(block)) continue
     const key = layerKey(block)
     const terms = layerTerms(block)
     const caption = captions.get(key)

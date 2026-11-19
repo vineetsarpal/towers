@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { Tower } from './types.js'
-import { assignFills, blockLines, formatAmount, layerCaptions, layerKey, towerShapes, towerTop } from './tower.js'
+import { assignFills, blockLines, formatAmount, isQuoteBlock, layerCaptions, layerKey, reinsurerLabel, towerShapes, towerTop } from './tower.js'
 
 const LINE = 15
 /** Where the highest finite limit sits when unlimited layers need room to run past it. */
@@ -89,7 +89,7 @@ export default function TowerChart({
           const height = y(shape.to) - bottom
           const key = layerKey(block)
           // A panel line leaves room above it for its layer's caption.
-          const room = height * HEIGHT - 4 - (block.reinsurer ? 2 * LINE : 0)
+          const room = height * HEIGHT - 4 - (reinsurerLabel(block) ? 2 * LINE : 0)
           const lines = blockLines(block).slice(0, Math.max(1, Math.floor(room / LINE)))
           const style = {
             left: `${shape.x0 * 100}%`,
@@ -109,7 +109,7 @@ export default function TowerChart({
           }
           const state = selectedKey === null ? '' : selectedKey === key ? ' is-selected' : ' is-dimmed'
           const layer = {
-            className: `rt-shape ${statusClass(block.lineStatus)}${state}${openTop}`,
+            className: `rt-shape ${statusClass(block.lineStatus)}${isQuoteBlock(block) ? ' rt-quote' : ''}${state}${openTop}`,
             style: { ...style, backgroundColor: ownFills.get(block.colorKey) },
             title: [block.layerName, ...blockLines(block)].filter((v, i, all) => all.indexOf(v) === i).join('\n'),
           }

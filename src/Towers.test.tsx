@@ -80,3 +80,24 @@ describe('Towers', () => {
     expect(screen.getByText('Loss 550, 150 above the tower')).toBeTruthy()
   })
 })
+
+describe('Reinsurer viewpoint', () => {
+  it.each(['quoted', 'indication'])('labels other reinsurers and styles a %s Line', (lineStatus) => {
+    const reinsurerRisk = risk('reinsurer', 'Acme')
+    reinsurerRisk.towers[0].bands[1].verticalBlocks = [
+      block({ blockKind: 'line', layerRef: 'L1', reinsurer: 'R', lineStatus, share: 16, xSpan: [0, 0.16] }),
+      block({ blockKind: 'otherReinsurers', layerRef: 'L1', share: 64, xSpan: [0.16, 0.8] }),
+      block({ blockKind: 'cedant', layerRef: 'L1', isRetention: true, share: 20, xSpan: [0.8, 1] }),
+    ]
+
+    const { container } = render(<Towers data={{ ...data, risks: [reinsurerRisk] }} />)
+    const quote = screen.getByRole('button', { name: /R\s*16%/ })
+    expect(quote.classList.contains('rt-quote')).toBe(true)
+    expect(quote.classList.contains(`rt-status-${lineStatus}`)).toBe(true)
+    expect(quote.getAttribute('title')).toContain(lineStatus)
+    expect(screen.getByRole('button', { name: /Other reinsurers\s*64%/ })).toBeTruthy()
+    expect(screen.getByText('Retention 20%')).toBeTruthy()
+    expect(container.querySelector('.rt-legend')?.textContent).toContain('Other reinsurers')
+    expect(container.querySelector(`.rt-legend .rt-status-${lineStatus}.rt-quote`)).toBeTruthy()
+  })
+})

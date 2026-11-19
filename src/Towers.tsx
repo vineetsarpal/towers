@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import TowerChart, { statusClass } from './TowerChart.js'
 import type { ScaleMode } from './TowerChart.js'
-import { assignFills } from './tower.js'
+import { assignFills, isQuoteBlock, OTHER_REINSURERS } from './tower.js'
 import type { RiskTowers, TowersResponse } from './types.js'
 
 export type TowersProps = {
@@ -41,14 +41,22 @@ function RiskSection({
   onSelect: (key: string | null) => void
 } & Pick<TowersProps, 'loss' | 'scale' | 'height' | 'legend'>) {
   const fills = useMemo(() => assignFills(risk.towers), [risk])
-  const statuses = useMemo(() => {
+  const { statuses, quotes, hasOtherReinsurers } = useMemo(() => {
     const seen = new Set<string>()
+    const quotes = new Set<string>()
+    let hasOtherReinsurers = false
     for (const tower of risk.towers) {
       for (const band of [...tower.unlimitedBands, ...tower.bands]) {
-        for (const block of band.verticalBlocks) if (block.lineStatus) seen.add(block.lineStatus)
+        for (const block of band.verticalBlocks) {
+          if (block.blockKind === 'otherReinsurers') hasOtherReinsurers = true
+          if (block.lineStatus) {
+            seen.add(block.lineStatus)
+            if (isQuoteBlock(block)) quotes.add(block.lineStatus)
+          }
+        }
       }
     }
-    return STATUSES.filter((s) => seen.has(s))
+    return { statuses: STATUSES.filter((s) => seen.has(s)), quotes, hasOtherReinsurers }
   }, [risk])
 
   return (
@@ -79,9 +87,12 @@ function RiskSection({
           <span>
             <span className="rt-swatch is-retention" /> kept by the cedant
           </span>
+          {hasOtherReinsurers && (
+            <span><span className="rt-swatch" /> {OTHER_REINSURERS}</span>
+          )}
           {statuses.map((s) => (
             <span key={s}>
-              <span className={`rt-swatch ${statusClass(s)}`} /> {s}
+              <span className={`rt-swatch ${statusClass(s)}${quotes.has(s) ? ' rt-quote' : ''}`} /> {s}
             </span>
           ))}
           <span className="rt-legend-note">Width is share of the risk, height is amount.</span>

@@ -11,6 +11,7 @@
   --rt-rule: #e8ebf0;
   --rt-retention: #d5d9df;
   --rt-loss: #b3261e;
+  --rt-quote-outline: var(--rt-ink);
 }
 
 .rt-towers,
@@ -99,6 +100,11 @@ button.rt-shape:hover { filter: brightness(0.96); }
 }
 .rt-status-firm-order {
   background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 7px);
+}
+
+.rt-quote {
+  outline: 1px dashed var(--rt-quote-outline);
+  outline-offset: -1px;
 }
 
 /* A legend chip. Combine with an rt-status-* class, or is-retention. */
