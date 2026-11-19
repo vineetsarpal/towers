@@ -2,10 +2,11 @@
 
 export type VerticalBlock = {
   vBlockNo: number
-  layerRefNo: string | null
+  layerRef: string | null
   layerName: string | null
   layerType: string | null
   contractRef: string | null
+  sharedRiskCount: number
   lowerLimit: number
   upperLimit: number | null
   layerAmount: number
@@ -13,15 +14,16 @@ export type VerticalBlock = {
   normalizedShare: number
   participationShare: number | null
   retainedShare: number | null
-  placedAt: number | null
+  order: number | null
   cededShare: number
   currency: string | null
   accumulateBasis: string | null
   protection: string | null
-  aadLimit: number | null
-  reinsurerName: string | null
-  reinsurerStatus: string | null
+  aad: number | null
+  reinsurer: string | null
+  lineStatus: string | null
   isRetention: boolean
+  color: string
   colorKey: string
   colorOverride: string | null
   label: string
@@ -33,6 +35,7 @@ export type VerticalBlock = {
 }
 
 export type HorizontalBand = {
+  bandRange: string
   hBandNo: number
   hyFrom: number
   hyTo: number | null
@@ -54,13 +57,20 @@ export type RiskTowers = {
   towers: Tower[]
 }
 
-export type TowersResponse = { risks: RiskTowers[] }
+export type Issue = { code: string; message: string; path?: string }
+
+export type TowersResponse = {
+  risks: RiskTowers[]
+  unlimitedDisplayHeight: number
+  warnings: Issue[]
+  limitations: Issue[]
+}
 
 /** The fields of a layer or block that its terms line is written from. */
 export type LayerTerms = {
   layerType: string | null
   lowerLimit: number
   upperLimit?: number | null
-  aadLimit?: number | null
+  aad?: number | null
   accumulateBasis?: string | null
 }

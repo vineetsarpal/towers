@@ -7,10 +7,10 @@ import type { TowersResponse, VerticalBlock } from './types.js'
 afterEach(cleanup)
 
 const block = (over: Partial<VerticalBlock>): VerticalBlock => ({
-  vBlockNo: 0, layerRefNo: null, layerName: 'L', layerType: 'XOL', contractRef: null, lowerLimit: 0,
+  vBlockNo: 0, sharedRiskCount: 1, color: '#ccc', layerRef: null, layerName: 'L', layerType: 'XOL', contractRef: null, lowerLimit: 0,
   upperLimit: 100, layerAmount: 100, share: 100, normalizedShare: 100, participationShare: null,
-  retainedShare: null, placedAt: 100, cededShare: 100, currency: 'USD', accumulateBasis: 'CLM',
-  protection: 'ALL', aadLimit: null, reinsurerName: null, reinsurerStatus: null, isRetention: false,
+  retainedShare: null, order: 100, cededShare: 100, currency: 'USD', accumulateBasis: 'CLM',
+  protection: 'ALL', aad: null, reinsurer: null, lineStatus: null, isRetention: false,
   colorKey: 'L', colorOverride: null, label: 'L', xSpan: [0, 1], ySpan: [0, 1], isPrimary: true,
   overlapId: null, ...over,
 })
@@ -24,14 +24,14 @@ const risk = (riskId: string, insuredName: string) => ({
       towerName: 'Per claim',
       unlimitedBands: [],
       bands: [
-        { hBandNo: 1, hyFrom: 0, hyTo: 250, isUnlimited: false, verticalBlocks: [block({ layerName: 'Retention', isRetention: true, colorKey: 'retention' })] },
-        { hBandNo: 2, hyFrom: 250, hyTo: 400, isUnlimited: false, verticalBlocks: [block({ layerName: 'Xol-Ly1', layerRefNo: 'L1', lowerLimit: 250, upperLimit: 400, colorKey: 'L1' })] },
+        { bandRange: '', hBandNo: 1, hyFrom: 0, hyTo: 250, isUnlimited: false, verticalBlocks: [block({ layerName: 'Retention', isRetention: true, colorKey: 'retention' })] },
+        { bandRange: '', hBandNo: 2, hyFrom: 250, hyTo: 400, isUnlimited: false, verticalBlocks: [block({ layerName: 'Xol-Ly1', layerRef: 'L1', lowerLimit: 250, upperLimit: 400, colorKey: 'L1' })] },
       ],
     },
   ],
 })
 
-const data: TowersResponse = { risks: [risk('r1', 'Acme'), risk('r2', 'Globex')] }
+const data: TowersResponse = { warnings: [], limitations: [], unlimitedDisplayHeight: 1_000_000, risks: [risk('r1', 'Acme'), risk('r2', 'Globex')] }
 
 describe('Towers', () => {
   it('draws every risk in the response, titled by insured', () => {

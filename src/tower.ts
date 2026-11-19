@@ -42,7 +42,7 @@ export function layerTerms(l: LayerTerms): string | null {
   }
   if (l.layerType !== 'XOL') return null
   const limit = l.upperLimit == null ? 'Unlimited' : formatAmount(l.upperLimit - l.lowerLimit)
-  const aad = l.aadLimit ? ` xs ${formatAmount(l.aadLimit)}` : ''
+  const aad = l.aad ? ` xs ${formatAmount(l.aad)}` : ''
   const basis = l.accumulateBasis ? ` ${BASIS_NAMES[l.accumulateBasis] ?? l.accumulateBasis}` : ''
   return `${limit} xs ${formatAmount(l.lowerLimit)}${aad}${basis}`
 }
@@ -50,9 +50,9 @@ export function layerTerms(l: LayerTerms): string | null {
 /** The lines written inside a block, most important first. */
 export function blockLines(b: VerticalBlock): string[] {
   if (b.isRetention) return [b.share < 99.995 ? `Retention ${formatPercent(b.share)}` : 'Retention']
-  if (b.reinsurerName) return [b.reinsurerName, formatPercent(b.share)]
+  if (b.reinsurer) return [b.reinsurer, formatPercent(b.share)]
 
-  const lines = [b.layerRefNo ? `${b.layerName} (${b.layerRefNo})` : (b.layerName ?? 'Layer')]
+  const lines = [b.layerRef ? `${b.layerName} (${b.layerRef})` : (b.layerName ?? 'Layer')]
   const terms = layerTerms(b)
   if (terms) lines.push(terms)
 
@@ -61,7 +61,7 @@ export function blockLines(b: VerticalBlock): string[] {
     if (b.cededShare < 100) lines.push(`Placed at ${formatPercent(b.cededShare)}`)
   } else {
     if (share != null && share !== 100) lines.push(formatPercent(share))
-    if (b.layerType === 'QSR' || (b.placedAt != null && b.placedAt < 100)) {
+    if (b.layerType === 'QSR' || (b.order != null && b.order < 100)) {
       lines.push(`Placed at ${formatPercent(b.cededShare)}`)
     }
   }
@@ -70,8 +70,8 @@ export function blockLines(b: VerticalBlock): string[] {
 
 // ─── Geometry ─────────────────────────────────────────────────────────────────
 
-export const layerKey = (l: { layerRefNo?: string | null; layerName?: string | null }) =>
-  l.layerRefNo || l.layerName || 'unknown'
+export const layerKey = (l: { layerRef?: string | null; layerName?: string | null }) =>
+  l.layerRef || l.layerName || 'unknown'
 
 export type Shape = {
   id: string
@@ -92,7 +92,7 @@ const same = (a: number, b: number) => Math.abs(a - b) < 1e-9
 export function towerShapes(tower: Tower): Shape[] {
   const shapes: Shape[] = []
   const idOf = (b: VerticalBlock) =>
-    b.isRetention ? 'retention' : `${layerKey(b)}|${b.reinsurerName ?? ''}`
+    b.isRetention ? 'retention' : `${layerKey(b)}|${b.reinsurer ?? ''}`
 
   for (const band of [...tower.unlimitedBands, ...tower.bands]) {
     for (const block of band.verticalBlocks) {
@@ -129,7 +129,7 @@ export type Caption = { key: string; text: string; x0: number; x1: number; to: n
 export function layerCaptions(shapes: Shape[]): Caption[] {
   const captions = new Map<string, Caption>()
   for (const { block, x0, x1, to } of shapes) {
-    if (!block.reinsurerName) continue
+    if (!block.reinsurer) continue
     const key = layerKey(block)
     const terms = layerTerms(block)
     const caption = captions.get(key)

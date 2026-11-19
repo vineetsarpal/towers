@@ -89,7 +89,7 @@ export default function TowerChart({
           const height = y(shape.to) - bottom
           const key = layerKey(block)
           // A panel line leaves room above it for its layer's caption.
-          const room = height * HEIGHT - 4 - (block.reinsurerName ? 2 * LINE : 0)
+          const room = height * HEIGHT - 4 - (block.reinsurer ? 2 * LINE : 0)
           const lines = blockLines(block).slice(0, Math.max(1, Math.floor(room / LINE)))
           const style = {
             left: `${shape.x0 * 100}%`,
@@ -109,7 +109,7 @@ export default function TowerChart({
           }
           const state = selectedKey === null ? '' : selectedKey === key ? ' is-selected' : ' is-dimmed'
           const layer = {
-            className: `rt-shape ${statusClass(block.reinsurerStatus)}${state}${openTop}`,
+            className: `rt-shape ${statusClass(block.lineStatus)}${state}${openTop}`,
             style: { ...style, backgroundColor: ownFills.get(block.colorKey) },
             title: [block.layerName, ...blockLines(block)].filter((v, i, all) => all.indexOf(v) === i).join('\n'),
           }

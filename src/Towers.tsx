@@ -45,7 +45,7 @@ function RiskSection({
     const seen = new Set<string>()
     for (const tower of risk.towers) {
       for (const band of [...tower.unlimitedBands, ...tower.bands]) {
-        for (const block of band.verticalBlocks) if (block.reinsurerStatus) seen.add(block.reinsurerStatus)
+        for (const block of band.verticalBlocks) if (block.lineStatus) seen.add(block.lineStatus)
       }
     }
     return STATUSES.filter((s) => seen.has(s))
