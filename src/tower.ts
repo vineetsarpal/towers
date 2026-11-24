@@ -58,6 +58,11 @@ export function isQuoteBlock(block: VerticalBlock): boolean {
     (block.lineStatus === 'indication' || block.lineStatus === 'quoted')
 }
 
+/** Identifies a reinsurer-viewpoint cedant block that belongs to a Layer, excluding retention fillers. */
+export function isLayerCedant(block: VerticalBlock): boolean {
+  return block.blockKind === 'cedant' && block.contractRef != null
+}
+
 /** The lines written inside a block, most important first. */
 export function blockLines(b: VerticalBlock): string[] {
   if (b.isRetention) return [b.share < 99.995 ? `Retention ${formatPercent(b.share)}` : 'Retention']
@@ -108,6 +113,7 @@ const same = (a: number, b: number) => Math.abs(a - b) < 1e-9
 export function towerShapes(tower: Tower): Shape[] {
   const shapes: Shape[] = []
   const idOf = (b: VerticalBlock) => {
+    if (isLayerCedant(b)) return `cedant|${b.contractRef}|${layerKey(b)}`
     if (b.isRetention) return 'retention'
     const key = `${layerKey(b)}|${b.reinsurer ?? ''}`
     return b.blockKind ? `${key}|${b.blockKind}|${b.lineStatus ?? ''}` : key
@@ -141,23 +147,25 @@ export function towerShapes(tower: Tower): Shape[] {
 
 export type Caption = { key: string; text: string; x0: number; x1: number; to: number | null }
 
-/**
- * A layer drawn as its reinsurer lines has no block of its own to carry its
- * name, so it gets a caption along the top edge of the lines taken together.
- */
+/** Captions sit above a Layer's reinsurer blocks or above its cedant blocks if it has no reinsurer blocks. */
 export function layerCaptions(shapes: Shape[]): Caption[] {
   const captions = new Map<string, Caption>()
+  const cedantCaptions = new Map<string, Caption>()
   for (const { block, x0, x1, to } of shapes) {
-    if (!reinsurerLabel(block)) continue
+    const target = reinsurerLabel(block) ? captions : isLayerCedant(block) ? cedantCaptions : null
+    if (!target) continue
     const key = layerKey(block)
-    const terms = layerTerms(block)
-    const caption = captions.get(key)
+    const caption = target.get(key)
     if (caption) {
       caption.x0 = Math.min(caption.x0, x0)
       caption.x1 = Math.max(caption.x1, x1)
     } else {
-      captions.set(key, { key, text: terms ? `${block.layerName}, ${terms}` : (block.layerName ?? key), x0, x1, to })
+      const terms = layerTerms(block)
+      target.set(key, { key, text: terms ? `${block.layerName}, ${terms}` : (block.layerName ?? key), x0, x1, to })
     }
+  }
+  for (const [key, caption] of cedantCaptions) {
+    if (!captions.has(key)) captions.set(key, caption)
   }
   return [...captions.values()]
 }

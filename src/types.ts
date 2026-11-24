@@ -5,6 +5,7 @@ export type VerticalBlock = {
   layerRef: string | null
   layerName: string | null
   layerType: string | null
+  /** The Layer's Contract. Null on retention fillers, which belong to no Layer. */
   contractRef: string | null
   sharedRiskCount: number
   lowerLimit: number

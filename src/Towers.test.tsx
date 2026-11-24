@@ -87,7 +87,7 @@ describe('Reinsurer viewpoint', () => {
     reinsurerRisk.towers[0].bands[1].verticalBlocks = [
       block({ blockKind: 'line', layerRef: 'L1', reinsurer: 'R', lineStatus, share: 16, xSpan: [0, 0.16] }),
       block({ blockKind: 'otherReinsurers', layerRef: 'L1', share: 64, xSpan: [0.16, 0.8] }),
-      block({ blockKind: 'cedant', layerRef: 'L1', isRetention: true, share: 20, xSpan: [0.8, 1] }),
+      block({ blockKind: 'cedant', contractRef: 'C1', layerRef: 'L1', isRetention: true, share: 20, xSpan: [0.8, 1] }),
     ]
 
     const { container } = render(<Towers data={{ ...data, risks: [reinsurerRisk] }} />)
@@ -99,5 +99,66 @@ describe('Reinsurer viewpoint', () => {
     expect(screen.getByText('Retention 20%')).toBeTruthy()
     expect(container.querySelector('.rt-legend')?.textContent).toContain('Other reinsurers')
     expect(container.querySelector(`.rt-legend .rt-status-${lineStatus}.rt-quote`)).toBeTruthy()
+
+    fireEvent.click(quote)
+    expect(quote.classList.contains('rt-quote')).toBe(true)
+    expect(quote.classList.contains('is-selected')).toBe(true)
+  })
+
+  it('selects a Layer drawn entirely as cedant', () => {
+    const reinsurerRisk = risk('reinsurer', 'Acme')
+    reinsurerRisk.towers[0].bands[0].verticalBlocks[0].blockKind = 'cedant'
+    reinsurerRisk.towers[0].bands[1].verticalBlocks = [
+      block({ blockKind: 'cedant', contractRef: 'C1', layerRef: 'L1', layerName: 'Upper XL', order: null, isRetention: true }),
+    ]
+    const response = { ...data, risks: [reinsurerRisk] }
+    const onSelect = vi.fn()
+    const { rerender } = render(<Towers data={response} selectedKey={null} onSelect={onSelect} />)
+    const cedant = screen.getByRole('button', { name: 'Upper XL, Retention' })
+    expect(cedant.classList.contains('is-retention')).toBe(true)
+    expect(cedant.getAttribute('title')).toContain('Upper XL')
+
+    fireEvent.click(cedant)
+    expect(onSelect).toHaveBeenCalledWith('L1', reinsurerRisk)
+
+    rerender(<Towers data={response} selectedKey="L1" onSelect={onSelect} />)
+    expect(cedant.classList.contains('is-selected')).toBe(true)
+    expect(cedant.getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it('selects the same key from the cedant share and the Line', () => {
+    const reinsurerRisk = risk('reinsurer', 'Acme')
+    const bands = reinsurerRisk.towers[0].bands
+    bands[0].verticalBlocks = [block({ layerRef: 'L0', layerName: 'Lower XL' })]
+    bands[1].verticalBlocks = [
+      block({ blockKind: 'line', contractRef: 'C1', layerRef: 'L1', reinsurer: 'R', share: 80, xSpan: [0, 0.8] }),
+      block({ blockKind: 'cedant', contractRef: 'C1', layerRef: 'L1', isRetention: true, share: 20, xSpan: [0.8, 1] }),
+    ]
+    const onSelect = vi.fn()
+    render(<Towers data={{ ...data, risks: [reinsurerRisk] }} onSelect={onSelect} />)
+    const line = screen.getByRole('button', { name: /R\s*80%/ })
+    const cedant = screen.getByRole('button', { name: 'L, Retention 20%' })
+
+    fireEvent.click(cedant)
+    expect(onSelect).toHaveBeenLastCalledWith('L1', reinsurerRisk)
+    expect(line.getAttribute('aria-pressed')).toBe('true')
+
+    fireEvent.click(screen.getByRole('button', { name: /Lower XL/ }))
+    expect(cedant.classList.contains('is-dimmed')).toBe(true)
+
+    fireEvent.click(line)
+    expect(onSelect).toHaveBeenLastCalledWith('L1', reinsurerRisk)
+    expect(cedant.getAttribute('aria-pressed')).toBe('true')
+  })
+
+  it.each(['cedant', undefined] as const)('renders a retention filler with blockKind %s as a div', (blockKind) => {
+    const retainedRisk = risk('retained', 'Acme')
+    retainedRisk.towers[0].bands[0].verticalBlocks[0].blockKind = blockKind
+    render(<Towers data={{ ...data, risks: [retainedRisk] }} selectedKey="L1" />)
+
+    const filler = screen.getByTitle('Retention')
+    expect(filler.tagName).toBe('DIV')
+    expect(filler.className).toBe('rt-shape is-retention')
+    expect(screen.getAllByRole('button')).toHaveLength(1)
   })
 })

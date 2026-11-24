@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { Tower } from './types.js'
-import { assignFills, blockLines, formatAmount, isQuoteBlock, layerCaptions, layerKey, reinsurerLabel, towerShapes, towerTop } from './tower.js'
+import { assignFills, blockLines, formatAmount, isLayerCedant, isQuoteBlock, layerCaptions, layerKey, towerShapes, towerTop } from './tower.js'
 
 const LINE = 15
 /** Where the highest finite limit sits when unlimited layers need room to run past it. */
@@ -88,9 +88,11 @@ export default function TowerChart({
           const bottom = y(shape.from)
           const height = y(shape.to) - bottom
           const key = layerKey(block)
-          // A panel line leaves room above it for its layer's caption.
-          const room = height * HEIGHT - 4 - (reinsurerLabel(block) ? 2 * LINE : 0)
-          const lines = blockLines(block).slice(0, Math.max(1, Math.floor(room / LINE)))
+          // A block under its layer's caption leaves room for it.
+          const captioned = captions.some((c) => c.key === key && c.x0 < shape.x1 && c.x1 > shape.x0)
+          const room = height * HEIGHT - 4 - (captioned ? 2 * LINE : 0)
+          const labels = blockLines(block)
+          const lines = labels.slice(0, Math.max(1, Math.floor(room / LINE)))
           const style = {
             left: `${shape.x0 * 100}%`,
             width: `${(shape.x1 - shape.x0) * 100}%`,
@@ -99,19 +101,21 @@ export default function TowerChart({
           }
           const text = height * HEIGHT >= 13 ? lines.map((line, i) => <span key={i}>{line}</span>) : null
           const openTop = shape.to === null ? ' is-open-top' : ''
+          const layerCedant = isLayerCedant(block)
 
-          if (block.isRetention) {
+          if (block.isRetention && !layerCedant) {
             return (
-              <div key={shape.id} className={`rt-shape is-retention${openTop}`} style={style} title={blockLines(block)[0]}>
+              <div key={shape.id} className={`rt-shape is-retention${openTop}`} style={style} title={labels[0]}>
                 {text}
               </div>
             )
           }
           const state = selectedKey === null ? '' : selectedKey === key ? ' is-selected' : ' is-dimmed'
+          const appearance = layerCedant ? 'is-retention' : statusClass(block.lineStatus)
           const layer = {
-            className: `rt-shape ${statusClass(block.lineStatus)}${isQuoteBlock(block) ? ' rt-quote' : ''}${state}${openTop}`,
-            style: { ...style, backgroundColor: ownFills.get(block.colorKey) },
-            title: [block.layerName, ...blockLines(block)].filter((v, i, all) => all.indexOf(v) === i).join('\n'),
+            className: `rt-shape ${appearance}${isQuoteBlock(block) ? ' rt-quote' : ''}${state}${openTop}`,
+            style: layerCedant ? style : { ...style, backgroundColor: ownFills.get(block.colorKey) },
+            title: [block.layerName, ...labels].filter((v, i, all) => all.indexOf(v) === i).join('\n'),
           }
           if (!onSelect) {
             return (
@@ -125,6 +129,7 @@ export default function TowerChart({
               key={shape.id}
               type="button"
               {...layer}
+              aria-label={layerCedant ? `${block.layerName ?? key}, ${labels[0]}` : undefined}
               aria-pressed={selectedKey === key}
               onClick={(e) => {
                 e.stopPropagation()

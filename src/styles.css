@@ -83,7 +83,8 @@ button.rt-shape:hover { filter: brightness(0.96); }
 .rt-shape > span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rt-shape > span:first-child { font-weight: 600; }
 .rt-shape.is-retention { background: var(--rt-retention); color: #3f4859; }
-.rt-shape.is-selected { box-shadow: inset 0 0 0 2px var(--rt-ink); z-index: 2; }
+.rt-shape.is-selected { z-index: 2; }
+.rt-shape.is-selected:where(:not(.rt-quote)) { box-shadow: inset 0 0 0 2px var(--rt-ink); }
 .rt-shape.is-dimmed { opacity: 0.45; }
 .rt-shape.is-open-top {
   box-shadow: inset 0 0 0 0.5px rgba(22, 32, 51, 0.55), inset 0 3px 0 -1px var(--rt-surface);
@@ -105,6 +106,16 @@ button.rt-shape:hover { filter: brightness(0.96); }
 .rt-quote {
   outline: 1px dashed var(--rt-quote-outline);
   outline-offset: -1px;
+}
+
+/* Keep the selection ring clear of the dashed quote or open-top edge. */
+.rt-shape.rt-quote.is-selected::after,
+.rt-shape.is-open-top.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 2px solid var(--rt-ink);
+  pointer-events: none;
 }
 
 /* A legend chip. Combine with an rt-status-* class, or is-retention. */

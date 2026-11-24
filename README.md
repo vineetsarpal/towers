@@ -51,6 +51,8 @@ Use the Engine’s `POST /recoveries` for Recovery Estimates for illustration an
 
 `formatAmount`, `formatPercent`, `layerTerms`, `layerKey` and `assignFills` are exported for building schedules and side panels that match the chart.
 
+`isLayerCedant(block)` (0.3.1 and later) identifies a Layer's cedant block in the reinsurer viewpoint. It returns `false` for retention fillers.
+
 ## Theme
 
 Set any of these on `:root` or on an element around the chart:

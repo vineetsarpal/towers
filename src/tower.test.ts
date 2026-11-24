@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Tower, VerticalBlock } from './types.js'
-import { blockLines, formatAmount, layerCaptions, towerShapes } from './tower.js'
+import { blockLines, formatAmount, isLayerCedant, layerCaptions, towerShapes } from './tower.js'
 
 const block = (over: Partial<VerticalBlock>): VerticalBlock => ({
   vBlockNo: 0, sharedRiskCount: 1, color: '#ccc', layerRef: null, layerName: 'L', layerType: 'XOL', contractRef: null, lowerLimit: 0,
@@ -31,6 +31,14 @@ const example3: Tower = {
   ],
 }
 
+describe('isLayerCedant', () => {
+  it('uses the contract reference even when the Layer reference is absent', () => {
+    expect(isLayerCedant(block({ blockKind: 'cedant', contractRef: 'C1', isRetention: true }))).toBe(true)
+    expect(isLayerCedant({ ...retention([0, 1]), blockKind: 'cedant' })).toBe(false)
+    expect(isLayerCedant(block({ contractRef: 'C1', isRetention: true }))).toBe(false)
+  })
+})
+
 describe('towerShapes', () => {
   it('joins a layer cut across bands into one rectangle', () => {
     const shapes = towerShapes(example3)
@@ -56,6 +64,22 @@ describe('towerShapes', () => {
     ])
   })
 
+  it('joins cedant pieces only within the same Layer', () => {
+    const filler = { ...retention([0, 1]), blockKind: 'cedant' as const }
+    const cedant = { ...filler, contractRef: 'C1', layerRef: 'L1', layerName: 'Working XL' }
+    const upper = { ...cedant, layerRef: 'L2', layerName: 'Upper XL' }
+    const tower: Tower = {
+      ...example3,
+      bands: [band(0, 100, [filler]), band(100, 200, [cedant]), band(200, 250, [cedant]), band(250, 400, [upper])],
+    }
+
+    expect(towerShapes(tower).map((s) => [s.block.layerName, s.from, s.to])).toEqual([
+      ['Retention', 0, 100],
+      ['Working XL', 100, 250],
+      ['Upper XL', 250, 400],
+    ])
+  })
+
   it('leaves out blocks hidden behind another in the same slot', () => {
     const tower: Tower = { ...example3, bands: [band(0, 100, [ly3, block({ layerName: 'Hidden', isPrimary: false })])] }
 
@@ -64,15 +88,27 @@ describe('towerShapes', () => {
 })
 
 describe('layerCaptions', () => {
-  it('names a layer once across the reinsurer lines that make it up', () => {
+  it('keeps a partly placed Layer caption over its reinsurer blocks', () => {
+    const layer = { layerName: 'Cat XL 2', layerRef: 'C2', contractRef: 'C1', lowerLimit: 20, upperLimit: 50, accumulateBasis: 'EVT' }
     const lines = [
-      block({ layerName: 'Cat XL 2', layerRef: 'C2', lowerLimit: 20, upperLimit: 50, accumulateBasis: 'EVT', reinsurer: 'Harbour Re', xSpan: [0, 0.35] }),
-      block({ layerName: 'Cat XL 2', layerRef: 'C2', lowerLimit: 20, upperLimit: 50, accumulateBasis: 'EVT', reinsurer: 'Alpine Rück', xSpan: [0.35, 0.85] }),
+      block({ ...layer, blockKind: 'line', reinsurer: 'Harbour Re', xSpan: [0, 0.35] }),
+      block({ ...layer, blockKind: 'otherReinsurers', xSpan: [0.35, 0.85] }),
+      block({ ...layer, blockKind: 'cedant', isRetention: true, xSpan: [0.85, 1] }),
     ]
-    const tower: Tower = { towerNo: 1, towerName: 'T', unlimitedBands: [], bands: [band(20, 50, [...lines, retention([0.85, 1])])] }
+    const tower: Tower = { towerNo: 1, towerName: 'T', unlimitedBands: [], bands: [band(20, 50, lines)] }
 
     expect(layerCaptions(towerShapes(tower))).toEqual([
       { key: 'C2', text: 'Cat XL 2, 30 xs 20 per event', x0: 0, x1: 0.85, to: 50 },
+    ])
+  })
+
+  it('captions a Layer drawn entirely as cedant and skips retention fillers', () => {
+    const cedant = block({ ...ly3, blockKind: 'cedant', contractRef: 'C1', order: null, isRetention: true })
+    const filler = { ...retention([0, 1]), blockKind: 'cedant' as const }
+    const tower: Tower = { ...example3, bands: [band(0, 400, [filler]), band(400, 500, [cedant])] }
+
+    expect(layerCaptions(towerShapes(tower))).toEqual([
+      { key: 'L3', text: 'Xol-Ly3, 100 xs 400 per claim', x0: 0, x1: 1, to: 500 },
     ])
   })
 
