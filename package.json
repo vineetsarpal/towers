@@ -1,6 +1,6 @@
 {
   "name": "@vinsa/towers",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "React components that draw reinsurance program towers from a computed towers response.",
   "license": "MIT",
   "repository": {
