@@ -71,9 +71,21 @@ Set any of these on `:root` or on an element around the chart:
 
 Layer colours come from the response: a block's `colorOverride` wins, otherwise each `colorKey` gets a fill from a built-in set.
 
+## Documentation
+
+Guides, the API reference and live examples: [towers.vinsa.dev/docs](https://towers.vinsa.dev/docs/).
+
+## Issues
+
+Report chart bugs and ideas in [issues](https://github.com/vineetsarpal/towers/issues). Issues are public: use made-up names and amounts, never real program data. For the API, API keys, or anything that needs real data, write to towers@vinsa.dev.
+
 ## Develop
 
+Use Node.js 24.
+
 ```sh
+npm ci
+npm run typecheck
 npm test
 npm run build
 ```

@@ -1,0 +1,49 @@
+name: Chart bug
+description: A tower is drawn wrongly, or a component or helper misbehaves.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not post real program data.** Issues here are public. Replace insured names, reinsurers, references and amounts with made-up values before pasting anything. If the problem only shows with real data, write to towers@vinsa.dev instead.
+
+        This repository draws the towers response. If the response itself looks wrong (a layer at the wrong height, share or position in the JSON), it is an API question: use the contact link on the previous page.
+  - type: input
+    id: version
+    attributes:
+      label: "@vinsa/towers version"
+      placeholder: "0.3.1"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: React version, framework and browser
+      placeholder: "React 19.2, Next.js 16, Chrome 142"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: response
+    attributes:
+      label: Anonymised towers response
+      description: The smallest response that shows the problem, exactly as passed to the component, with made-up names and amounts.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: How you render it
+      description: The component and props you use.
+      render: tsx
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot
+      description: Drag an image here. Check it shows no real data.

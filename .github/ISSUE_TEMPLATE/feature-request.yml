@@ -1,0 +1,23 @@
+name: Feature request
+description: An idea for the chart components, theming or helpers.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Issues here are public. Describe your idea with made-up examples, never real program data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you are trying to show or do
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like the package to do
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: What you do today instead

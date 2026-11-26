@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: API, engine or account question
+    url: mailto:towers@vinsa.dev
+    about: Wrong towers in the API response, API keys, Placements, Recoveries or Comparisons. Also use this for anything that needs real program data.
+  - name: Documentation
+    url: https://towers.vinsa.dev/docs/
+    about: Guides and reference for the API and the React components.

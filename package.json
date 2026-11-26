@@ -5,8 +5,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vineetsarpal/ri-towers.git",
-    "directory": "packages/towers"
+    "url": "git+https://github.com/vineetsarpal/towers.git"
+  },
+  "homepage": "https://towers.vinsa.dev/docs/react/install/",
+  "bugs": {
+    "url": "https://github.com/vineetsarpal/towers/issues"
   },
   "type": "module",
   "sideEffects": [

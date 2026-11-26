@@ -1,0 +1,37 @@
+name: Publish @vinsa/towers
+
+# Push a tag like towers-v0.4.0 to stage that version on npm.
+# The release goes public once it is approved on npmjs.com.
+on:
+  push:
+    tags: ["towers-v*"]
+
+permissions:
+  contents: read
+  id-token: write # npm trusted publishing: no token is stored in this repo; provenance is attached automatically
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+      - name: Check the tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "towers-v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+      # Staged publishing needs a newer npm than the one bundled with Node.
+      - run: npm install -g npm@latest
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # Uploads the release without making it public: approve it on npmjs.com to finish.
+      - run: npm stage publish
